@@ -94,7 +94,6 @@ class FeatureEngineer:
         print("Feature engineering complete")
         return self.df
 
-
 class AnomalyDetector:
     def __init__(self, df):
         self.df = df
