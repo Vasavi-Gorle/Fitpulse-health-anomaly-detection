@@ -1,207 +1,134 @@
 import pandas as pd
 import numpy as np
 import json
-import os
 from datetime import datetime, timedelta
 
 
-def load_csv_data(file_path, data_type='heart_rate'):
-    """
-    Load fitness data from CSV file
-    """
+csv_file = "data/raw/fitness_data_sample.csv"
+json_file = "data/raw/fitness_data_sample.json"
+
+try:
+    df_sample = pd.read_csv(csv_file)
+    print("CSV file already exists.")
+except:
+    print("Creating sample CSV and JSON files...")
+    # Generate timestamps
+    timestamps = [datetime.now() - timedelta(minutes=10*i) for i in range(72)]
+    timestamps = list(reversed(timestamps))
+    
+    heart_rate = np.random.randint(60, 120, size=72)
+    steps = np.random.randint(0, 50, size=72)
+    sleep_stage = np.random.choice(["Awake", "Light", "Deep", "REM"], size=72)
+    calories = np.random.uniform(0.5, 5.0, size=72).round(2)
+    
+    df_sample = pd.DataFrame({
+        "timestamp": [t.strftime("%Y-%m-%d %H:%M:%S") for t in timestamps],
+        "heart_rate_bpm": heart_rate,
+        "steps": steps,
+        "sleep_stage": sleep_stage,
+        "calories_burned": calories
+    })
+    
+    # Save CSV and JSON
     try:
-        df = pd.read_csv(file_path)
-        print(f"Loaded {len(df)} rows from {file_path}")
-        print("First 5 rows:")
-        print(df.head())
+        df_sample.to_csv(csv_file, index=False)
+    except:
+        # If folder doesn't exist, just save in current directory
+        df_sample.to_csv("fitness_data_sample.csv", index=False)
+        csv_file = "fitness_data_sample.csv"
 
-        if 'timestamp' not in df.columns:
-            raise ValueError("CSV must contain 'timestamp' column")
-
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        print(f"Date range: {df['timestamp'].min()} to {df['timestamp'].max()}")
-        return df
-
-    except FileNotFoundError:
-        print(f"Error: File {file_path} not found")
-        return None
-    except Exception as e:
-        print(f"Error loading CSV: {str(e)}")
-        return None
-
-
-def load_json_data(file_path, extract_type='heart_rate'):
-    """
-    Load fitness data from JSON file
-    """
     try:
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-
-        print(f"JSON file loaded. Available data types: {data.get('data_types', [])}")
-
-        if extract_type == 'heart_rate':
-            records = data.get('heart_rate_data', [])
-        elif extract_type == 'steps':
-            records = data.get('step_data', [])
-        elif extract_type == 'sleep':
-            records = data.get('sleep_data', [])
-        else:
-            raise ValueError(f"Unsupported extract_type: {extract_type}")
-
-        df = pd.DataFrame(records)
-        if not df.empty and 'timestamp' in df.columns:
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
-
-        print(f"Extracted {len(df)} {extract_type} records")
-        return df
-
-    except FileNotFoundError:
-        print(f"Error: File {file_path} not found")
-        return None
-    except json.JSONDecodeError:
-        print("Error: Invalid JSON format")
-        return None
-    except Exception as e:
-        print(f"Error loading JSON: {str(e)}")
-        return None
+        df_sample.to_json(json_file, orient="records", indent=4)
+    except:
+        df_sample.to_json("fitness_data_sample.json", orient="records", indent=4)
+        json_file = "fitness_data_sample.json"
+    print("Sample files created.")
 
 
-class FitnessDataIngester:
-    """Complete fitness data ingestion pipeline"""
+class DataLoader:
+    def __init__(self, filepath):
+        self.filepath = filepath
 
-    def __init__(self):
-        self.supported_formats = ['.csv', '.json']
-        self.supported_data_types = ['heart_rate', 'steps', 'sleep']
-
-    def detect_file_format(self, file_path):
-        _, ext = os.path.splitext(file_path.lower())
-        return ext
-
-    def validate_data_type(self, data_type):
-        if data_type not in self.supported_data_types:
-            raise ValueError(f"Unsupported data type. Use: {self.supported_data_types}")
-
-    def load_data(self, file_path, data_type='heart_rate'):
-        print(f"Loading {data_type} data from {file_path}")
-        self.validate_data_type(data_type)
-
-        file_format = self.detect_file_format(file_path)
-        if file_format not in self.supported_formats:
-            raise ValueError(f"Unsupported file format: {file_format}")
-
-        if file_format == '.csv':
-            df = load_csv_data(file_path, data_type)
-        else:
-            df = load_json_data(file_path, data_type)
-
-        if df is not None and not df.empty:
-            df = self._standardize_dataframe(df, data_type)
-        return df
-
-    def _standardize_dataframe(self, df, data_type):
-        if 'timestamp' in df.columns:
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
-            df = df.sort_values('timestamp')
-
-        if data_type == 'heart_rate':
-            hr_columns = ['bpm', 'heart_rate_bpm', 'heartrate', 'hr']
-            for col in hr_columns:
-                if col in df.columns:
-                    df['heart_rate'] = df[col]
-                    break
-        elif data_type == 'steps':
-            step_columns = ['steps', 'step_count', 'steps_per_minute']
-            for col in step_columns:
-                if col in df.columns:
-                    df['steps'] = df[col]
-                    break
-
-        print(f"Standardized DataFrame shape: {df.shape}")
-        print(f"Columns: {list(df.columns)}")
-        return df
+    def load_data(self):
+        try:
+            if self.filepath.endswith(".csv"):
+                print("Loading CSV file...")
+                return pd.read_csv(self.filepath)
+            elif self.filepath.endswith(".json"):
+                print("Loading JSON file...")
+                with open(self.filepath, "r") as f:
+                    data = json.load(f)
+                return pd.DataFrame(data)
+            else:
+                raise ValueError("Unsupported file format! Use .csv or .json")
+        except:
+            raise FileNotFoundError(f"File not found: {self.filepath}")
 
 
-def perform_data_quality_check(df, data_type):
-    """Comprehensive data quality assessment"""
-    quality_report = {
-        'total_records': len(df),
-        'date_range': None,
-        'missing_values': {},
-        'data_issues': [],
-        'quality_score': 100
-    }
+class Preprocessor:
+    def __init__(self, df):
+        self.df = df
 
-    if df.empty:
-        quality_report['data_issues'].append("No data found")
-        quality_report['quality_score'] = 0
-        return quality_report
-
-    # Timestamp analysis
-    if 'timestamp' in df.columns:
-        quality_report['date_range'] = {
-            'start': df['timestamp'].min(),
-            'end': df['timestamp'].max(),
-            'duration_hours': (df['timestamp'].max() - df['timestamp'].min()).total_seconds() / 3600
-        }
-
-        time_diffs = df['timestamp'].diff().dropna()
-        if not time_diffs.empty:
-            large_gaps = time_diffs[time_diffs > timedelta(minutes=10)]
-            if len(large_gaps) > 0:
-                quality_report['data_issues'].append(f"Found {len(large_gaps)} time gaps > 10 minutes")
-
-    # Missing values
-    for column in df.columns:
-        missing_count = df[column].isnull().sum()
-        if missing_count > 0:
-            quality_report['missing_values'][column] = {
-                'count': missing_count,
-                'percentage': (missing_count / len(df)) * 100
-            }
-
-    # Data-specific checks
-    if data_type == 'heart_rate':
-        hr_col = 'heart_rate' if 'heart_rate' in df.columns else 'bpm'
-        if hr_col in df.columns:
-            hr_values = df[hr_col].dropna()
-            unrealistic_low = (hr_values < 30).sum()
-            unrealistic_high = (hr_values > 220).sum()
-            if unrealistic_low > 0:
-                quality_report['data_issues'].append(f"{unrealistic_low} heart rate values < 30 BPM")
-            if unrealistic_high > 0:
-                quality_report['data_issues'].append(f"{unrealistic_high} heart rate values > 220 BPM")
-
-    # Quality score
-    quality_report['quality_score'] -= len(quality_report['data_issues']) * 10
-    for info in quality_report['missing_values'].values():
-        quality_report['quality_score'] -= info['percentage'] / 2
-
-    quality_report['quality_score'] = max(0, quality_report['quality_score'])
-    return quality_report
+    def clean_data(self):
+        self.df["timestamp"] = pd.to_datetime(self.df["timestamp"], errors="coerce")
+        self.df = self.df.dropna(subset=["timestamp"])
+        for col in self.df.select_dtypes(include=[np.number]).columns:
+            self.df[col].fillna(self.df[col].mean(), inplace=True)
+        for col in self.df.select_dtypes(include=["object"]).columns:
+            self.df[col].fillna(self.df[col].mode()[0], inplace=True)
+        print("Preprocessing complete")
+        return self.df
 
 
-# ----------------- TESTING -----------------
+class FeatureEngineer:
+    def __init__(self, df):
+        self.df = df
 
-ingester = FitnessDataIngester()
+    def create_features(self):
+        self.df["hr_rolling_avg"] = self.df["heart_rate_bpm"].rolling(window=3, min_periods=1).mean()
+        self.df["activity_level"] = pd.cut(
+            self.df["steps"],
+            bins=[-1, 10, 30, 100],
+            labels=["Low", "Medium", "High"]
+        )
+        print("Feature engineering complete")
+        return self.df
 
-csv_data = ingester.load_data('sample_heart_rate.csv', 'heart_rate')
-print("\nCSV Data loaded:")
-if csv_data is not None:
-    print(csv_data.head())
 
-json_hr_data = ingester.load_data('sample_fitness_data.json', 'heart_rate')
-print("\nJSON Data loaded:")
-if json_hr_data is not None:
-    print(json_hr_data.head())
+class AnomalyDetector:
+    def __init__(self, df):
+        self.df = df
 
-quality = perform_data_quality_check(json_hr_data, 'heart_rate')
-print("\nData Quality Report:")
-print(f"Total records: {quality['total_records']}")
-print(f"Quality score: {quality['quality_score']:.1f}/100")
-if quality['date_range']:
-    print(f"Date range: {quality['date_range']['start']} to {quality['date_range']['end']}")
-if quality['data_issues']:
-    print("Issues found:")
-    for issue in quality['data_issues']:
-        print(f" - {issue}")
+    def detect(self):
+        self.df["anomaly"] = "Normal"
+        self.df.loc[self.df["heart_rate_bpm"] > 160, "anomaly"] = "High HR"
+        self.df.loc[self.df["heart_rate_bpm"] < 40, "anomaly"] = "Low HR"
+        self.df.loc[(self.df["steps"] == 0) & (self.df["calories_burned"] > 3.5), "anomaly"] = "Suspicious Calories"
+        print("✅ Anomaly detection complete")
+        return self.df
+
+
+if __name__ == "__main__":
+    # Prefer CSV
+    filepath = csv_file if csv_file else json_file
+
+    loader = DataLoader(filepath)
+    df = loader.load_data()
+    print("\n🔹 Data Loaded:")
+    print(df.head())
+
+    pre = Preprocessor(df)
+    df_clean = pre.clean_data()
+
+    feat = FeatureEngineer(df_clean)
+    df_features = feat.create_features()
+
+    anomaly = AnomalyDetector(df_features)
+    df_final = anomaly.detect()
+
+    # Save processed data (current directory)
+    df_final.to_csv("cleaned_fitness_data.csv", index=False)
+    df_final.to_json("cleaned_fitness_data.json", orient="records", indent=4)
+
+    print("\n Pipeline completed successfully!")
+    print(" Processed data saved as cleaned_fitness_data.csv & .json")
