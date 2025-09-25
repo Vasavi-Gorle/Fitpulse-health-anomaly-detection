@@ -4,13 +4,13 @@ from datetime import datetime, timedelta
 import json
 
 
-timestamps = [datetime.now() - timedelta(minutes=10*i) for i in range(72)]
+timestamps = [datetime.now() - timedelta(minutes=10*i) for i in range(250)]
 timestamps = list(reversed(timestamps))  # oldest to newest
 
 
-heart_rate = np.random.randint(60, 120, size=72)  # bpm
-steps = np.random.randint(0, 50, size=72)         # steps in 10 min
-sleep_stage = np.random.choice(["Awake", "Light", "Deep", "REM"], size=72)
+heart_rate = np.random.randint(60, 120, size=250)  # bpm
+steps = np.random.randint(0, 50, size=250)         # steps in 10 min
+sleep_hours = np.random.randint(0,8, size=250)
 
 
 
@@ -18,7 +18,7 @@ df = pd.DataFrame({
     "timestamp": [t.strftime("%Y-%m-%d %H:%M:%S") for t in timestamps],
     "heart_rate_bpm": heart_rate,
     "steps": steps,
-    "sleep_stage": sleep_stage,
+    "sleep_hours": sleep_hours
 })
 
 
