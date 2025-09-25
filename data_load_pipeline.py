@@ -14,7 +14,7 @@ st.set_page_config(page_title="FitPulse — Data Pipeline", layout="wide")
 # -----------------------
 # Helper functions
 # -----------------------
-def generate_sample_data(rows=1440):
+def generate_sample_data(rows=1000):
     start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     idx = pd.date_range(start, periods=rows, freq="T")
     heart = (60 + 10*np.sin(np.linspace(0, 12*np.pi, rows)) + np.random.normal(0, 3, rows)).astype(int)
@@ -76,7 +76,7 @@ def simple_validation(df):
     issues = []
     if "heart_rate" in df.columns:
         hr = df["heart_rate"]
-        invalid = hr[(hr.notna()) & ((hr < 30) | (hr > 220))]
+        invalid = hr[(hr.notna()) & ((hr < 30) | (hr > 20))]
         for idx, val in invalid.items():
             issues.append({"index": idx, "column": "heart_rate", "value": val, "issue": "heart_rate outside plausible range (30-220)"})
     if "steps" in df.columns:
