@@ -9,7 +9,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-st.set_page_config(page_title="FitPulse — Data Pipeline", layout="wide")
+st.set_page_config(page_title="FitPulse Health Anomaly Detection", layout="wide")
 
 # -----------------------
 # Helper functions
@@ -153,7 +153,7 @@ elif use_sample:
 # -----------------------
 # Pipeline logic continues...
 # -----------------------
-st.title("📊 FitPulse Anomaly Detection")
+st.title("📊 FitPulse Health Anomaly Detection")
 with st.expander("Raw data (first 200 rows)"):
     st.write(raw_df.head(200))
 
@@ -260,7 +260,7 @@ buf = processed.to_csv(index=False).encode('utf-8')
 st.download_button(label="Download cleaned CSV", data=buf, file_name="fitpulse_cleaned.csv", mime="text/csv")
 
 # Summary metrics
-st.subheader("FitPulse Anomaly Detection")
+st.subheader("FitPulse Health Anomaly Detection")
 col_a, col_b, col_c = st.columns(3)
 col_a.metric("Rows after processing", len(processed))
 col_b.metric("Numeric columns", len(num_cols))
