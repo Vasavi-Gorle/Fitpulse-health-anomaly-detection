@@ -414,6 +414,9 @@ def main():
     analyzer = st.session_state.analyzer
     
     # Sidebar for milestones
+    st.sidebar.title("💖FitPulse")
+    st.sidebar.title("Fitpulse Anomaly Detection")
+    st.sidebar.markdown("---")
     st.sidebar.title("🎯 Milestones")
     modules = [
         "Milestone 1: Data Upload & Preprocessing",
