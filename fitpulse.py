@@ -400,7 +400,8 @@ def create_sample_data():
     return sample_data
 
 def main():
-    st.title("🏃‍♂️ Fitness Data Anomaly Detection Dashboard")
+    st.title("💖FitPulse")
+    st.title("🏃‍♂️ Fitness Health Anomaly Detection")
     st.markdown("""
     This application analyzes fitness tracker data (heart rate, steps, sleep) to detect anomalies 
     and identify behavioral patterns using advanced time-series analysis and machine learning.
@@ -412,15 +413,15 @@ def main():
     
     analyzer = st.session_state.analyzer
     
-    # Sidebar for navigation
-    st.sidebar.title("Navigation")
+    # Sidebar for milestones
+    st.sidebar.title("Milestones")
     modules = [
-        "Module 1: Data Upload & Preprocessing",
-        "Module 2: Feature Extraction & Modeling", 
-        "Module 3: Anomaly Detection & Visualization",
-        "Module 4: Dashboard & Reports"
+        "Milestone 1: Data Upload & Preprocessing",
+        "Milestone 2: Feature Extraction & Modeling", 
+        "Milestone 3: Anomaly Detection & Visualization",
+        "Milestone 4: Dashboard & Reports"
     ]
-    selected_module = st.sidebar.selectbox("Select Module", modules)
+    selected_module = st.sidebar.selectbox("Select Milestones", modules)
     
     # Quick start with sample data
     st.sidebar.markdown("---")
@@ -428,16 +429,16 @@ def main():
     if st.sidebar.button("Load Sample Data"):
         sample_data = create_sample_data()
         analyzer.data = sample_data
-        st.sidebar.success("Sample data loaded! Go to Module 1 for preprocessing.")
+        st.sidebar.success("Sample data loaded! Go to Milestone 1 for preprocessing.")
     
-    # Module 1: Data Upload & Preprocessing
-    if selected_module == "Module 1: Data Upload & Preprocessing":
+    # Milestone 1: Data Upload & Preprocessing
+    if selected_module == "Milestone 1: Data Upload & Preprocessing":
         st.header("📊 Data Upload & Preprocessing")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Upload Fitness Data")
+            st.subheader("📁Upload Fitness Data")
             file_type = st.radio("Select file type:", ["CSV", "JSON"])
             uploaded_file = st.file_uploader(
                 f"Upload {file_type} file", 
@@ -561,13 +562,13 @@ def main():
                             st.error(message)
             else:
                 st.info("Please upload data or use sample data to get started.")
-    
-    # Module 2: Feature Extraction & Modeling
-    elif selected_module == "Module 2: Feature Extraction & Modeling":
+
+    # Milestone 2: Feature Extraction & Modeling
+    elif selected_module == "Milestone 2: Feature Extraction & Modeling":
         st.header("🔍 Feature Extraction & Modeling")
         
         if analyzer.cleaned_data is None:
-            st.warning("Please complete data preprocessing in Module 1 first.")
+            st.warning("Please complete data preprocessing in Milestone 1 first.")
         else:
             col1, col2 = st.columns(2)
             
@@ -704,13 +705,13 @@ def main():
                             st.dataframe(cluster_stats.round(3))
                     else:
                         st.error(message)
-    
-    # Module 3: Anomaly Detection & Visualization
-    elif selected_module == "Module 3: Anomaly Detection & Visualization":
+
+    # Milestone 3: Anomaly Detection & Visualization
+    elif selected_module == "Milestone 3: Anomaly Detection & Visualization":
         st.header("🚨 Anomaly Detection & Visualization")
         
         if analyzer.cleaned_data is None:
-            st.warning("Please complete data preprocessing in Module 1 first.")
+            st.warning("Please complete data preprocessing in Milestone 1 first.")
         else:
             col1, col2 = st.columns(2)
             
@@ -807,13 +808,13 @@ def main():
                         labels={'x': 'Date', 'y': 'Anomaly Count'}
                     )
                     st.plotly_chart(fig_timeline, use_container_width=True)
-    
-    # Module 4: Dashboard & Reports
-    elif selected_module == "Module 4: Dashboard & Reports":
+
+    # Milestone 4: Dashboard & Reports
+    elif selected_module == "Milestone 4: Dashboard & Reports":
         st.header("📈 Comprehensive Dashboard & Reports")
         
         if analyzer.cleaned_data is None:
-            st.warning("Please complete data preprocessing in Module 1 first.")
+            st.warning("Please complete data preprocessing in Milestone 1 first.")
         else:
             # Summary statistics
             st.subheader("📊 Overall Summary")
