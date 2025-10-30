@@ -414,7 +414,7 @@ def main():
     analyzer = st.session_state.analyzer
     
     # Sidebar for milestones
-    st.sidebar.title("Milestones")
+    st.sidebar.title("🎯 Milestones")
     modules = [
         "Milestone 1: Data Upload & Preprocessing",
         "Milestone 2: Feature Extraction & Modeling", 
